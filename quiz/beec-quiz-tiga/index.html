@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Education Quiz</title>
+
+<!-- Screenshot -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+/* ===== GLOBAL ===== */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: url(bg1.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    width: 100%;
+    max-width: 420px;
+    padding: 15px;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: fadeIn .4s ease;
+}
+
+/* ===== TITLE ===== */
+.title {
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+/* ===== INPUT ===== */
+.input-box {
+    display:flex;
+    background:#f1f1f1;
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+.input-box span {
+    margin-right:8px;
+}
+
+.input-box input {
+    border:none;
+    outline:none;
+    background:transparent;
+    flex:1;
+}
+
+/* ===== BUTTON ===== */
+button {
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:bold;
+    color:white;
+    background: linear-gradient(135deg,#ff7e5f,#ff3f34);
+    margin-top:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover {
+    transform:scale(1.05);
+}
+
+/* ===== QUESTION ===== */
+#question {
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+/* ===== ANSWERS ===== */
+.answer {
+    background:#eee;
+    padding:12px;
+    border-radius:10px;
+    margin:8px 0;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.answer:hover {
+    background:#ddd;
+}
+
+/* ===== PROGRESS ===== */
+.progress {
+    height:8px;
+    background:#ddd;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.bar {
+    height:8px;
+    background:green;
+    width:0%;
+    border-radius:10px;
+}
+
+/* ===== FEEDBACK ===== */
+#feedback {
+    margin-top:10px;
+    font-weight:bold;
+}
+
+/* ===== RESULT ===== */
+.result {
+    text-align:center;
+}
+
+/* ===== HIDDEN ===== */
+.hidden { display:none; }
+
+/* ===== ANIMASI ===== */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- START -->
+<div id="start" class="card">
+    <div class="title">🎵 English Education Game</div>
+
+    <div class="input-box">
+        <span>👤</span>
+        <input type="text" id="name" placeholder="Masukkan nama kamu">
+    </div>
+
+    <button onclick="startGame()">Mulai Game</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="card hidden">
+    <div class="progress"><div id="bar" class="bar"></div></div>
+
+    <div id="question"></div>
+    <div id="media"></div>
+    <div id="answers"></div>
+    <div id="feedback"></div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="card hidden result">
+    <h2>🎉 Hasil Akhir</h2>
+    <p id="player"></p>
+    <p id="score"></p>
+    <p id="grade"></p>
+
+    <button onclick="screenshot()">📸 Screenshot</button>
+    <button onclick="shareWA()">📲 Kirim WA</button>
+</div>
+
+</div>
+
+<!-- SOUND -->
+<audio id="correct" src="audio/benar2.mp3"></audio>
+<audio id="wrong" src="audio/salah.mp3"></audio>
+
+<script>
+let player="",current=0,score=0;
+
+let questions=[
+    // GUESS THE PICTURE
+{q:"What sentence is correct for this picture?",img:"img/he-is-eating-an-apple.jpg",a:["He is eating an apple","He is sleeping","He are eating an apple"],c:0},
+{q:"What sentence is correct for this picture?",img:"img/she-is-dancing.jpg",a:["She is dancing","They play soccer","She eats an apple"],c:0},
+{q:"What sentence is correct for this picture?",img:"img/the-are-playing-soccer.jpg",a:["They are playing soccer","She eating an apple","The dog barking loudly"],c:0},
+{q:"What sentence is correct for this picture?",img:"img/the-cat-is-sleeping.jpg",a:["We read books","He plays piano","The cat is sleeping"],c:2},
+{q:"What sentence is correct for this picture?",img:"img/mom-is-cooking.jpg",a:["We read books","Mom is cooking","Father drives a car"],c:1},
+{q:"What sentence is correct for this picture?",img:"img/he-is-swimming.jpg",a:["He is swimming","He is reading","He is eating"],c:0},
+{q:"What sentence is correct for this picture?",img:"img/the-bird-is-flying.jpg",a:["The birds are running","The bird is flying","The birds are sleeping"],c:1},
+{q:"What sentence is correct for this picture?",img:"img/she-is-writting.jpg",a:["She is writing","She is dancing","She is jumping"],c:0},
+{q:"What sentence is correct for this picture?",img:"img/the-dog-is-running.jpg",a:["The dog is sleeping","The dog is running","The dog is eating"],c:1},
+{q:"What sentence is correct for this picture?",img:"img/he-is-drawing.jpg",a:["She is cooking","He is swimming","He is drawing"],c:2},
+
+// MULTIPLE CHOICE
+
+{q:"I __ eating a banana.",a:["am","is","are"],c:0},
+{q:"She __ reading a book.",a:["am","is","are"],c:1},
+{q:"They __ playing football.",a:["am","is","are"],c:2},
+{q:"We __ singing.",a:["am","is","are"],c:2},
+{q:"He __ sleeping now.",a:["am","is","are"],c:1},
+{q:"The dog is __ .",a:["run","running","runs"],c:1},
+{q:"Mom is __ dinner.",a:["cooking","cook","cooks"],c:0},
+{q:"The baby is __ .",a:["crying","cry","cries"],c:0},
+{q:"Are they __ soccer?",a:["playing","play","plays"],c:0},
+{q:"She is __ a picture.",a:["drawing","draw","draws"],c:0},
+{q:"I am __ music.",a:["listening to","listen to","listens to"],c:0},
+{q:"The birds are __ .",a:["flying","fly","flies"],c:0},
+{q:"He is __ his homework.",a:["do","doing","does"],c:1},
+{q:"We are __ basketball.",a:["plays","play","playing"],c:2},
+{q:"The teacher is __ .",a:["teach","teaches","teaching"],c:2},
+
+// TRUE OR FALSE
+{q:"She is eating an apple.",a:["True","False"],c:0},
+{q:"They are playing soccer.",a:["True","False"],c:0},
+{q:"He is sleep now.",a:["True","False"],c:1},
+{q:"I am reading a book.",a:["True","False"],c:0},
+{q:"We are singing a song.",a:["True","False"],c:0},
+{q:"The cat is running.",a:["True","False"],c:0},
+{q:"She are dancing.",a:["True","False"],c:1},
+{q:"The birds are flying.",a:["True","False"],c:0},
+{q:"Mom is cooking dinner.",a:["True","False"],c:0},
+{q:"I is doing my homework.",a:["True","False"],c:1},
+{q:"My teacher teaches math.",a:["True","False"],c:0},
+{q:"They play badminton every Sunday.",a:["True","False"],c:0},
+{q:"He have a bicycle.",a:["True","False"],c:1},
+{q:"I read books at night.",a:["True","False"],c:0},
+{q:"The sun rises in the morning.",a:["True","False"],c:0},
+];
+
+function startGame(){
+    player=document.getElementById("name").value;
+    if(player==""){alert("Isi nama dulu!");return;}
+
+    questions.sort(()=>Math.random()-0.5);
+
+    document.getElementById("start").classList.add("hidden");
+    document.getElementById("quiz").classList.remove("hidden");
+
+    load();
+}
+
+function load(){
+    let q=questions[current];
+
+    document.getElementById("question").innerText=q.q;
+    document.getElementById("media").innerHTML="";
+    document.getElementById("feedback").innerText="";
+
+    if(q.img){
+        document.getElementById("media").innerHTML=`<img src="${q.img}" width="120">`;
+    }
+
+    if(q.audio){
+        document.getElementById("media").innerHTML=`<audio controls src="${q.audio}"></audio>`;
+    }
+
+    let ans=document.getElementById("answers");
+    ans.innerHTML="";
+
+    q.a.forEach((text,i)=>{
+        let div=document.createElement("div");
+        div.className="answer";
+        div.innerText=text;
+        div.onclick=()=>check(i);
+        ans.appendChild(div);
+    });
+
+    updateBar();
+}
+
+function check(i){
+    let q=questions[current];
+    let answers=document.querySelectorAll(".answer");
+
+    answers.forEach(a=>a.style.pointerEvents="none");
+
+    if(i===q.c){
+        score++;
+        answers[i].style.background="green";
+        feedback("✅ Benar!");
+        document.getElementById("correct").play();
+    }else{
+        answers[i].style.background="red";
+        answers[q.c].style.background="green";
+        feedback("❌ Salah! Jawaban: "+q.a[q.c]);
+        document.getElementById("wrong").play();
+    }
+
+    setTimeout(()=>{
+        current++;
+        if(current<questions.length){
+            load();
+        }else{
+            result();
+        }
+    },1500);
+}
+
+function feedback(text){
+    document.getElementById("feedback").innerText=text;
+}
+
+function updateBar(){
+    let p=(current/questions.length)*100;
+    document.getElementById("bar").style.width=p+"%";
+}
+
+function result(){
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    document.getElementById("player").innerText="Nama: "+player;
+    document.getElementById("score").innerText="Skor: "+score+"/"+questions.length;
+
+    let g="C";
+    if(score>=30) g="B";
+    if(score>=35) g="A";
+
+    document.getElementById("grade").innerText="Grade: "+g;
+}
+
+function screenshot(){
+    html2canvas(document.getElementById("result")).then(c=>{
+        let link=document.createElement("a");
+        link.download="hasil.png";
+        link.href=c.toDataURL();
+        link.click();
+    });
+}
+
+function shareWA(){
+    let text=`Saya ${player} mendapat skor ${score}/${questions.length} di Quiz Musik 🎵`;
+    window.open("https://wa.me/?text="+encodeURIComponent(text));
+}
+</script>
+
+</body>
+</html>
