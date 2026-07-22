@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Education Quiz</title>
+
+<!-- Screenshot -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+/* ===== GLOBAL ===== */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: url(bg1.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    width: 100%;
+    max-width: 420px;
+    padding: 15px;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: fadeIn .4s ease;
+}
+
+/* ===== TITLE ===== */
+.title {
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+/* ===== INPUT ===== */
+.input-box {
+    display:flex;
+    background:#f1f1f1;
+    border-radius:12px;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+.input-box span {
+    margin-right:8px;
+}
+
+.input-box input {
+    border:none;
+    outline:none;
+    background:transparent;
+    flex:1;
+}
+
+/* ===== BUTTON ===== */
+button {
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:bold;
+    color:white;
+    background: linear-gradient(135deg,#ff7e5f,#ff3f34);
+    margin-top:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover {
+    transform:scale(1.05);
+}
+
+/* ===== QUESTION ===== */
+#question {
+    font-size:18px;
+    margin-bottom:10px;
+}
+
+/* ===== ANSWERS ===== */
+.answer {
+    background:#eee;
+    padding:12px;
+    border-radius:10px;
+    margin:8px 0;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.answer:hover {
+    background:#ddd;
+}
+
+/* ===== PROGRESS ===== */
+.progress {
+    height:8px;
+    background:#ddd;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.bar {
+    height:8px;
+    background:green;
+    width:0%;
+    border-radius:10px;
+}
+
+/* ===== FEEDBACK ===== */
+#feedback {
+    margin-top:10px;
+    font-weight:bold;
+}
+
+/* ===== RESULT ===== */
+.result {
+    text-align:center;
+}
+
+/* ===== HIDDEN ===== */
+.hidden { display:none; }
+
+/* ===== ANIMASI ===== */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(20px);}
+    to {opacity:1; transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- START -->
+<div id="start" class="card">
+    <div class="title">🎵 English Education Game</div>
+
+    <div class="input-box">
+        <span>👤</span>
+        <input type="text" id="name" placeholder="Masukkan nama kamu">
+    </div>
+
+    <button onclick="startGame()">Mulai Game</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="card hidden">
+    <div class="progress"><div id="bar" class="bar"></div></div>
+
+    <div id="question"></div>
+    <div id="media"></div>
+    <div id="answers"></div>
+    <div id="feedback"></div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="card hidden result">
+    <h2>🎉 Hasil Akhir</h2>
+    <p id="player"></p>
+    <p id="score"></p>
+    <p id="grade"></p>
+
+    <button onclick="screenshot()">📸 Screenshot</button>
+    <button onclick="shareWA()">📲 Kirim WA</button>
+</div>
+
+</div>
+
+<!-- SOUND -->
+<audio id="correct" src="audio/benar2.mp3"></audio>
+<audio id="wrong" src="audio/salah.mp3"></audio>
+
+<script>
+let player="",current=0,score=0;
+
+let questions=[
+    // Translate
+{q:"Apa bahasa Inggrisnya Bandara?",a:["Airport","Bicycle","Blanket"],c:0},
+{q:"Apa bahasa Inggrisnya Sepeda?",a:["Airport","Bicycle","Blanket"],c:1},
+{q:"Apa bahasa Inggrisnya Selimut?",a:["Airport","Bicycle","Blanket"],c:2},
+{q:"Apa bahasa Inggrisnya Botol?",a:["Bottle","Bridge","Camera"],c:0},
+{q:"Apa bahasa Inggrisnya Jembatan?",a:["Bottle","Bridge","Camera"],c:1},
+{q:"Apa bahasa Inggrisnya Kamera?",a:["Bottle","Bridge","Camera"],c:2},
+{q:"Apa bahasa Inggrisnya Istana?",a:["Castle","Ceiling","Circle"],c:0},
+{q:"Apa bahasa Inggrisnya Langit-langit?",a:["Castle","Ceiling","Circle"],c:1},
+{q:"Apa bahasa Inggrisnya Lingkaran?",a:["Castle","Ceiling","Circle"],c:2},
+{q:"Apa bahasa Inggrisnya Awan?",a:["Cloud","Compass","Desert"],c:0},
+{q:"Apa bahasa Inggrisnya Kompas?",a:["Cloud","Compass","Desert"],c:1},
+{q:"Apa bahasa Inggrisnya Gurun?",a:["Cloud","Compass","Desert"],c:2},
+{q:"Apa bahasa Inggrisnya Gajah?",a:["Elephant","Feather","Forest"],c:0},
+{q:"Apa bahasa Inggrisnya Bulu?",a:["Elephant","Feather","Forest"],c:1},
+{q:"Apa bahasa Inggrisnya Hutan?",a:["Elephant","Feather","Forest"],c:2},
+// {q:"What sentence is correct for this picture?",img:"img/he-is-eating-an-apple.jpg",a:["Airport","Bicycle","Blanket"],c:0},
+
+// MULTIPLE CHOICE
+
+{q:"I ___ my grandmother next week.",a:["visit","visited","will visit", "visiting"],c:2},
+{q:"She ___ a new book tomorrow.",a:["will buy","buys","bought", "buying"],c:0},
+{q:"They ___ football next Saturday.",a:["played","will play","play", "playing"],c:1},
+{q:"We ___ to the zoo next month.",a:["go","went","will go", "going"],c:2},
+{q:"My father ___ dinner tonight.",a:["cooks","cooked","cooking", "will cook"],c:3},
+{q:"___ you help me tomorrow?",a:["do","did","will", "are"],c:2},
+{q:"The students ___ the test next week.",a:["will take","take","took", "taking"],c:0},
+{q:"It ___ this afternoon.",a:["rains","rained","will rain", "raining"],c:2},
+{q:"We ___ our teacher next Monday.",a:["meet","met","meeting", "will meet"],c:3},
+{q:"He ___ his home work after dinner.",a:["do","did","will do", "doing"],c:2},
+
+// TRUE OR FALSE
+{q:"'I will go to school tomorrow.' adalah Simple Future Tense.",a:["True","False"],c:0},
+{q:"'She will plays piano tomorrow' adalah kalimat yang benar.",a:["True","False"],c:1},
+{q:"Setelah 'will' harus menggunakan Verb 1.",a:["True","False"],c:0},
+{q:"'They will visit Bali next year.' adalah Simple Future Tense.",a:["True","False"],c:0},
+{q:"Kata 'yesterday' biasanya digunakan pada Simple Future Tense.",a:["True","False"],c:1},
+{q:"Kalimat negatif Simple Future Tense dapat dibentuk dengan 'will not (won't) + verb 1'.",a:["True","False"],c:0},
+{q:"Kalimat 'We will not visit Grandma tomorrow' bukan kalimat negatif Simple Future Tense.",a:["True","False"],c:0},
+{q:"Kalimat 'Will you help me later?' adalah bentuk pertanyaan Simple Future Tense.",a:["True","False"],c:0},
+{q:"Kalimat 'My father will buy a new car next year' menunjukkan kegiatan yang akan terjadi dibesok hari",a:["True","False"],c:1},
+{q:"'She is eating breakfast' menggunakan Simple Future Tense.",a:["True","False"],c:0},
+];
+
+function startGame(){
+    player=document.getElementById("name").value;
+    if(player==""){alert("Isi nama dulu!");return;}
+
+    questions.sort(()=>Math.random()-0.5);
+
+    document.getElementById("start").classList.add("hidden");
+    document.getElementById("quiz").classList.remove("hidden");
+
+    load();
+}
+
+function load(){
+    let q=questions[current];
+
+    document.getElementById("question").innerText=q.q;
+    document.getElementById("media").innerHTML="";
+    document.getElementById("feedback").innerText="";
+
+    if(q.img){
+        document.getElementById("media").innerHTML=`<img src="${q.img}" width="120">`;
+    }
+
+    if(q.audio){
+        document.getElementById("media").innerHTML=`<audio controls src="${q.audio}"></audio>`;
+    }
+
+    let ans=document.getElementById("answers");
+    ans.innerHTML="";
+
+    q.a.forEach((text,i)=>{
+        let div=document.createElement("div");
+        div.className="answer";
+        div.innerText=text;
+        div.onclick=()=>check(i);
+        ans.appendChild(div);
+    });
+
+    updateBar();
+}
+
+function check(i){
+    let q=questions[current];
+    let answers=document.querySelectorAll(".answer");
+
+    answers.forEach(a=>a.style.pointerEvents="none");
+
+    if(i===q.c){
+        score++;
+        answers[i].style.background="green";
+        feedback("✅ Benar!");
+        document.getElementById("correct").play();
+    }else{
+        answers[i].style.background="red";
+        answers[q.c].style.background="green";
+        feedback("❌ Salah! Jawaban: "+q.a[q.c]);
+        document.getElementById("wrong").play();
+    }
+
+    setTimeout(()=>{
+        current++;
+        if(current<questions.length){
+            load();
+        }else{
+            result();
+        }
+    },1500);
+}
+
+function feedback(text){
+    document.getElementById("feedback").innerText=text;
+}
+
+function updateBar(){
+    let p=(current/questions.length)*100;
+    document.getElementById("bar").style.width=p+"%";
+}
+
+function result(){
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    document.getElementById("player").innerText="Nama: "+player;
+    document.getElementById("score").innerText="Skor: "+score+"/"+questions.length;
+
+    let g="C";
+    if(score>=30) g="B";
+    if(score>=35) g="A";
+
+    document.getElementById("grade").innerText="Grade: "+g;
+}
+
+function screenshot(){
+    html2canvas(document.getElementById("result")).then(c=>{
+        let link=document.createElement("a");
+        link.download="hasil.png";
+        link.href=c.toDataURL();
+        link.click();
+    });
+}
+
+function shareWA(){
+    let text=`Saya ${player} mendapat skor ${score}/${questions.length} di Quiz Musik 🎵`;
+    window.open("https://wa.me/?text="+encodeURIComponent(text));
+}
+</script>
+
+</body>
+</html>
