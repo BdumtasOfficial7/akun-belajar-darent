@@ -16,11 +16,9 @@ input,textarea{width:100%;padding:10px;margin:8px 0}button{padding:10px 18px;bor
 <source src="listening1.mp4" type="video/mp4">
 </video>
 <h3>Questions</h3>
-<p>1. What is the topic of the video?</p>
+<p>1. Watch the video carefully and write down as many verb as you can find in the video!</p>
 <textarea id="a1"></textarea>
-<p>2. Watch the video carefully and write down as many <b>Nouns</b> as you can find in the video!</p>
-<textarea id="a2"></textarea>
-<p>3. Watch the video carefully and write down as many <b>Verbs</b> as you can find in the video!</p>
+<p>2. Watch the video carefully and write down as many nouns as you can find in the video!</p>
 <textarea id="a2"></textarea>
 <button onclick="makePDF()">Download PDF</button>
 <button onclick="wa()">Open WhatsApp Admin</button>
@@ -36,7 +34,6 @@ async function makePDF(){
  d.text("Class: "+studentClass,20,45);
  d.text("Q1: "+a1.value,20,60,{maxWidth:170});
  d.text("Q2: "+a2.value,20,90,{maxWidth:170});
- d.text("Q3: "+a3.value,20,180,{maxWidth:170});
  d.save("Listening_Result_"+name.value+".pdf");
 }
 function wa(){
